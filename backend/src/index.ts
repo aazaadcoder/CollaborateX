@@ -6,6 +6,7 @@ import { config } from "./config/app.config";
 import connectDataBase from "./config/database.config";
 import { errorHandler } from "./middlewares/errorHandler.middleware";
 import { HTTPSTATUS } from "./config/http.config";
+import { asyncHandler } from "./middlewares/aynscHandler.middleware";
 
 const app = express();
 
@@ -33,16 +34,16 @@ app.use(
     })
 )
 
-app.get("/", async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        throw Error("Error aa gaya bhai dekho to kya hua")
-        res.status(HTTPSTATUS.OK).json({
-            message: "Welcome to Backend"
-        })
-    } catch (error) {
-        next(error)
-    }
-})
+app.get("/", asyncHandler((req: Request, res: Response, next: NextFunction) => {
+
+    throw Error("Error aa gaya bhai dekho to kya hua")
+    res.status(HTTPSTATUS.OK).json({
+        message: "Welcome to Backend"
+    })
+
+
+
+}))
 
 app.use(errorHandler);
 
