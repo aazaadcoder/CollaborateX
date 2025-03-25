@@ -7,6 +7,8 @@ import connectDataBase from "./config/database.config";
 import { errorHandler } from "./middlewares/errorHandler.middleware";
 import { HTTPSTATUS } from "./config/http.config";
 import { asyncHandler } from "./middlewares/aynscHandler.middleware";
+import { BadRequestException } from "./utils/appError.util";
+import { ErrorCodeEnum } from "./enums/error-code.enum";
 
 const app = express();
 
@@ -34,9 +36,9 @@ app.use(
     })
 )
 
-app.get("/", asyncHandler((req: Request, res: Response, next: NextFunction) => {
+app.get("/", asyncHandler( async (req: Request, res: Response, next: NextFunction) => {
 
-    throw Error("Error aa gaya bhai dekho to kya hua")
+    throw new BadRequestException("bad reqest bhai", ErrorCodeEnum.INTERNAL_SERVER_ERROR)
     res.status(HTTPSTATUS.OK).json({
         message: "Welcome to Backend"
     })
