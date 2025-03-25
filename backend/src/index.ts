@@ -4,6 +4,8 @@ import cors from "cors";
 import session from "cookie-session";
 import { config } from "./config/app.config";
 import connectDataBase from "./config/database.config";
+import { errorHandler } from "./middlewares/errorHandler.middleware";
+import { HTTPSTATUS } from "./config/http.config";
 
 const app = express();
 
@@ -26,16 +28,23 @@ app.use(
 
 app.use(
     cors({
-        origin : config.FRONTEND_ORIGIN,
-        credentials : true
+        origin: config.FRONTEND_ORIGIN,
+        credentials: true
     })
 )
 
-app.get("/", (req : Request, res : Response , next : NextFunction) => {
-    res.status(200).json({
-        message: "Welcome to Backend"
-    })
+app.get("/", async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        throw Error("Error aa gaya bhai dekho to kya hua")
+        res.status(HTTPSTATUS.OK).json({
+            message: "Welcome to Backend"
+        })
+    } catch (error) {
+        next(error)
+    }
 })
+
+app.use(errorHandler);
 
 app.listen(config.PORT, async () => {
     console.log(`Listening to PORT: ${config.PORT} in ${config.NODE_ENV}`);
