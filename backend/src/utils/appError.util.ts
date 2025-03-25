@@ -18,8 +18,6 @@ export class AppError extends Error {
     }
 
 }
-
-
 export class HttpException extends AppError {
     constructor(
         message = "HTTP Exception Error",
@@ -33,7 +31,6 @@ export class HttpException extends AppError {
         )
     }
 }
-
 export class InternalServerException extends AppError {
     constructor(
         message = "Internal Server Error",
@@ -46,7 +43,6 @@ export class InternalServerException extends AppError {
         )
     }
 }
-
 export class NotFoundException extends AppError{
     constructor(
         message = "Resource not found",
