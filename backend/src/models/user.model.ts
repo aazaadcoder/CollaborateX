@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 import { hashValue } from "../utils/bcrypt.util";
 
 
-export interface UserDoccument extends Document {
+export interface UserDoccument extends Document  {
     name: string;
     email: string;
     password?: string;
@@ -40,7 +40,7 @@ const userSchema = new Schema<UserDoccument>({
     },
     currentWorkspace: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "workspaces"
+        ref: "WorkSpace"
     },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date, default: null }
