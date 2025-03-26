@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 import { hashValue } from "../utils/bcrypt.util";
 
 
-export interface UserDoccument extends Document  {
+export interface UserDocument extends Document {
     name: string;
     email: string;
     password?: string;
@@ -14,10 +14,10 @@ export interface UserDoccument extends Document  {
     updatedAt: Date;
     currentWorkspace: mongoose.Types.ObjectId | null;
     comparePassword(value: string): Promise<boolean>
-    omitPassword(): Omit<UserDoccument, "password">
+    omitPassword(): Omit<UserDocument, "password">
 }
 
-const userSchema = new Schema<UserDoccument>({
+const userSchema = new Schema<UserDocument>({
     name: {
         type: String,
         required: true,
@@ -58,15 +58,15 @@ userSchema.pre("save", async function (next) {
 })
 
 
-userSchema.methods.omitPassword = function (): Omit<UserDoccument, 'password'> {
+userSchema.methods.omitPassword = function (): Omit<UserDocument, 'password'> {
     const userObject = this.toObject();
     delete userObject.password;
     return userObject;
 }
 
-userSchema.methods.comparePassword = async function(value :string){
+userSchema.methods.comparePassword = async function (value: string) {
     return compareValue(value, this.password);
 }
 
-const UserModel = mongoose.model<UserDoccument>("User", userSchema);
+const UserModel = mongoose.model<UserDocument>("User", userSchema);
 export default UserModel;

@@ -33,7 +33,7 @@ app.use(
 )
 
 app.use(passport.initialize()); // initialize passport to use startegy
-app.use(passport.session()) // to populate req with session data 
+app.use(passport.session()) // to populate req with session data and this even creates cookies for client/
 
 app.use(
     cors({

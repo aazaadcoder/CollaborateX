@@ -6,7 +6,6 @@ import { Request } from "express";
 import { NotFoundException } from "../utils/appError.util";
 import { ProvideEnum } from "../enums/account.provider";
 import { loginOrCreateAccountService } from "../services/auth.service";
-import { any } from "zod";
 
 
 passport.use(
@@ -22,8 +21,9 @@ passport.use(
         async (req: Request, accessToken, refreshToken, profile, done) => {
             try {
                 const { email, sub: googleId, picture } = profile._json;   //contains raw user data from Google
-                console.log("googleId", googleId);
-                console.log("profile", profile);
+
+                // console.log("googleId", googleId);
+                // console.log("profile", profile);
                 if (!googleId) {
                     throw new NotFoundException("Google Id (sub) is missing");
                 }

@@ -17,8 +17,13 @@ export const loginOrCreateAccountService = async (data: {
 }) => {
     const { email, provider, providerId, displayName, picture } = data;
 
+    // will start a session 
     const session = await mongoose.startSession();
     try {
+
+        // will start the transaction 
+        session.startTransaction();
+
         // will check if user already exits in db
         let user = await UserModel.findOne({ email }, null, { session });
 
@@ -33,6 +38,7 @@ export const loginOrCreateAccountService = async (data: {
             );
 
             await user.save({ session });
+            console.log(user)
 
             // now we will create an account for the user
 
