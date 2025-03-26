@@ -14,4 +14,9 @@ export const googleLoginCallback = asyncHandler(async (req: Request, res: Respon
 
     return res.redirect(`${config.FRONTEND_ORIGIN}/workspace/${currentWorkspace}`)
 
-})  
+})
+
+export const registerUserController = asyncHandler(
+    async (req : Request , res : Response) => {
+        
+    })
