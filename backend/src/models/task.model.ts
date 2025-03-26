@@ -1,6 +1,6 @@
 import { TaskPriorityEnum, TaskstatusEnumType } from './../enums/task.enum';
 import mongoose, { Document, Schema } from "mongoose";
-import { TaskPriorityEnumType, TaskstatusEnum, TaskstatusEnumType } from "../enums/task.enum";
+import { TaskPriorityEnumType, TaskstatusEnum } from "../enums/task.enum";
 import { string } from "zod";
 import { generateTaskCode } from '../utils/uuid.util';
 

@@ -6,4 +6,4 @@ export const ProvideEnum = {
     PHONE : "PHONE"
 }
 
-export type ProvideEnumTypes keyof typeof ProvideEnum;
+export type ProvideEnumTypes =  keyof typeof ProvideEnum;   

@@ -9,6 +9,9 @@ import { HTTPSTATUS } from "./config/http.config";
 import { asyncHandler } from "./middlewares/aynscHandler.middleware";
 import { BadRequestException } from "./utils/appError.util";
 import { ErrorCodeEnum } from "./enums/error-code.enum";
+import "./config/passport.config"
+import passport from "passport";
+import authRoutes from "./routes/auth.route";
 
 const app = express();
 
@@ -29,6 +32,9 @@ app.use(
     )
 )
 
+app.use(passport.initialize()); // initialize passport to use startegy
+app.use(passport.session()) // to populate req with session data 
+
 app.use(
     cors({
         origin: config.FRONTEND_ORIGIN,
@@ -42,10 +48,9 @@ app.get("/", asyncHandler( async (req: Request, res: Response, next: NextFunctio
     res.status(HTTPSTATUS.OK).json({
         message: "Welcome to Backend"
     })
-
-
-
 }))
+
+app.use(`${BASE_PATH}/auth`, authRoutes)
 
 app.use(errorHandler);
 
