@@ -1,11 +1,13 @@
+import { object } from 'zod';
 import mongoose from "mongoose";
 import UserModel from "../models/user.model";
 import accountModel from "../models/account.model";
 import WorkspaceModel from "../models/workspace.model";
 import RoleModel from "../models/role-permission.model";
 import { Roles } from "../enums/role.enum";
-import { NotFoundException } from "../utils/appError.util";
+import { BadRequestException, NotFoundException } from "../utils/appError.util";
 import MemberModel from "../models/member.model";
+import { ProvideEnum } from "../enums/account.provider";
 
 
 export const loginOrCreateAccountService = async (data: {
@@ -60,7 +62,7 @@ export const loginOrCreateAccountService = async (data: {
 
             await workspace.save({ session });
 
-            // fetching owner roles from the role collection as will have to create a membe doccuement for this user and its wokrspace and will have to specify the role of this user in its workspace
+            // fetching owner roles from the role collection as will have to create a member doccuement for this user and its wokrspace and will have to specify the role of this user in its workspace
 
             const ownerRole = await RoleModel.findOne({
                 name: Roles.OWNER,
@@ -93,8 +95,8 @@ export const loginOrCreateAccountService = async (data: {
         await session.commitTransaction();
 
         // now we will return an object with user object as one of it key
-        return {user};
-        
+        return { user };
+
     } catch (error) {
         await session.abortTransaction();
 
@@ -104,5 +106,95 @@ export const loginOrCreateAccountService = async (data: {
         // end the session 
         session.endSession()
 
+    }
+}
+
+export const registerUserService = async (body: {
+    email: string,
+    name: string,
+    password: string
+}) => {
+    const { email, name, password } = body;
+    const session = await mongoose.startSession();
+
+    try {
+        session.startTransaction();
+
+        const existingUser = await UserModel.findOne({ email }, null, { session });
+
+        // checking if user already exists and throw error if so
+        if (existingUser) {
+            throw new BadRequestException("Email already exists");
+        }
+
+        // create a user doccument for the new user
+        const user = new UserModel({
+            email,
+            name,
+            password
+        });
+
+        await user.save({ session });
+
+        // creating a new account document for the new user using email as the provider
+        const account = new accountModel({
+            userId: user._id,
+            provider: ProvideEnum.EMAIL,
+            providerId: email,
+        })
+
+        await account.save({ session });
+
+        // now creating a new workspace for the new user
+        const workspace = new WorkspaceModel({
+            name: "My Workspace",
+            description: `Workspace created for ${user.name}`,
+            owner: user._id,
+        })
+
+        await workspace.save({ session });
+
+        // mow we will fetch role document for the role of owner as after this we will create a member document for the new user and we need role id for that
+
+        const ownerRole = await RoleModel.findOne({
+            name: Roles.OWNER
+        }, null, { session });
+
+        if (!ownerRole) {
+            throw new NotFoundException("Owner role not found");
+        }
+
+        // now we will create the member document for the new user
+
+        const member = new MemberModel({
+            userId: user._id,
+            workspaceId: workspace._id,
+            role: ownerRole._id,
+            joinedAt: new Date(),
+        })
+
+        await member.save({ session });
+
+        // now we will set the workspace created above as the currentworksapce of the new user
+
+        user.currentWorkspace = workspace._id as mongoose.Types.ObjectId;
+
+        await user.save({ session });
+
+        // we will commit all the transactions
+        await session.commitTransaction();
+        // anything related to transaction returns a promise
+
+        return({
+            userId : user._id,
+            workspaceId: workspace._id,
+        })
+
+    } catch (error) {
+        await session.abortTransaction();
+
+        throw error;
+    } finally {
+        session.endSession();
     }
 }

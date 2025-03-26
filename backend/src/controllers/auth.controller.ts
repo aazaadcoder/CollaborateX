@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../middlewares/aynscHandler.middleware";
 import { config } from "../config/app.config";
+import { registerSchema } from "../validation/auth.validation";
+import { HTTPSTATUS } from "../config/http.config";
+import { registerUserService } from "../services/auth.service";
 
 export const googleLoginCallback = asyncHandler(async (req: Request, res: Response) => {
     
@@ -18,5 +21,14 @@ export const googleLoginCallback = asyncHandler(async (req: Request, res: Respon
 
 export const registerUserController = asyncHandler(
     async (req : Request , res : Response) => {
-        
+        const body = registerSchema.parse({...req.body});
+        // this parses the object passed and validates it and return error if validation fails
+
+        // will register the user
+        await registerUserService(body);
+
+        // send res to client if user is created
+        return res.status(HTTPSTATUS.CREATED).json({
+            message : "User created successfully",
+        })
     })
