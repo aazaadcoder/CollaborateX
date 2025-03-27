@@ -25,7 +25,7 @@ const workSpaceSchema = new Schema<WorkspaceDocument>(
             type: String,
             required: true, 
             unique: true, 
-            default : generateWorkSpaceInviteCode,
+            default : generateWorkSpaceInviteCode,  
         }
     },
     {timestamps: true}

@@ -14,6 +14,7 @@ import passport from "passport";
 import authRoutes from "./routes/auth.route";
 import userRoute from "./routes/user.route";
 import isAuthenticated from "./middlewares/isAuthenticated.middleware";
+import workspaceRoute from "./routes/workspace.route";
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.get("/", asyncHandler( async (req: Request, res: Response, next: NextFunctio
 
 app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/user`, isAuthenticated, userRoute);
+app.use(`${BASE_PATH}/workspace`, isAuthenticated, workspaceRoute);
 
 
 app.use(errorHandler);
