@@ -40,7 +40,7 @@ const userSchema = new Schema<UserDocument>({
     },
     currentWorkspace: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "WorkSpace"
+        ref: "Workspace"
     },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date, default: null }
