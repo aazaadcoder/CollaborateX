@@ -44,7 +44,7 @@ const taskSchema = new Schema<TaskDocument>(
         },
         workspace: {
             type: Schema.Types.ObjectId,
-            ref: "WorkSpace",
+            ref: "Workspace",
             required: true
 
         },

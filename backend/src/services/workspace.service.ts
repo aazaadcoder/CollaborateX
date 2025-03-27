@@ -4,7 +4,7 @@ import RoleModel from '../models/role-permission.model';
 import { Roles } from '../enums/role.enum';
 import MemberModel from '../models/member.model';
 import UserModel from "../models/user.model";
-import { NotFoundException } from "../utils/appError.util";
+import { NotFoundException, UnauthorizedAccessException } from "../utils/appError.util";
 
 export const createWorkspaceService = async (userId: string, body: { name: string, description?: string | undefined }) => {
 
@@ -95,15 +95,44 @@ export const getAllUserWorkspacesUserIsMemberService = async (userId: string) =>
 
         // fetch all the data of workspaces the user is part of
 
-        const memberships = await MemberModel.find({userId}).populate("workspaceId").exec();
+        const memberships = await MemberModel.find({ userId }).populate("workspaceId").exec();
         // mongoose queries donot return promise but when we use exec it dose but there is no functonal difference i can even use a callback 
 
         // extract workspace data from memebership data 
         const workspaces = memberships.map((memberData) => (memberData.workspaceId))
-        
-        return {workspaces};
+
+        return { workspaces };
     } catch (error) {
         throw error;
     }
+
+}
+
+export const getWorkspaceByIdService = async (workspaceId: string) => {
+
+    try {
+
+
+        const workspace = await WorkspaceModel.findById(workspaceId);
+
+        if (!workspaceId) {
+            throw new NotFoundException("workspace doesnot exists");
+        }
+
+        // now we will also fetch all the members of the workspace and their role data which will be used to handle permissions on the client side
+        const members = await MemberModel.find({ workspaceId }).populate("role");
+
+        const workspaceWithMembers = {
+            ...workspace?.toJSON,
+            members
+        }
+
+        return { workspace: workspaceWithMembers };
+    } catch (error) {
+        throw error;
+    }
+
+    // Q : is try catch needed here really ?
+
 
 }
