@@ -111,23 +111,28 @@ export const getAllUserWorkspacesUserIsMemberService = async (userId: string) =>
 export const getWorkspaceByIdService = async (workspaceId: string) => {
 
     try {
+        // // check if user exists 
+        // const user = await UserModel.findById(userId);
 
+        // if (!user) {
+        //     throw new NotFoundException("User Does not exists");
+        // }
 
         const workspace = await WorkspaceModel.findById(workspaceId);
 
-        if (!workspaceId) {
+        if(!workspaceId){
             throw new NotFoundException("workspace doesnot exists");
         }
-
+       
         // now we will also fetch all the members of the workspace and their role data which will be used to handle permissions on the client side
-        const members = await MemberModel.find({ workspaceId }).populate("role");
+        const members  = await MemberModel.find({workspaceId}).populate("role");
 
         const workspaceWithMembers = {
             ...workspace?.toJSON,
             members
         }
 
-        return { workspace: workspaceWithMembers };
+        return { workspace : workspaceWithMembers };
     } catch (error) {
         throw error;
     }

@@ -4,7 +4,9 @@ import { createWorkspaceSchema, workspaceIdSchema } from '../validation/workspac
 import { createWorkspaceService, getAllUserWorkspacesUserIsMemberService, getWorkspaceByIdService } from '../services/workspace.service';
 import { HTTPSTATUS } from '../config/http.config';
 import { UnauthorizedAccessException } from '../utils/appError.util';
-import { getMemberRoleService } from '../services/member.service';
+import { getAllWorkspaceMembersService, getMemberRoleInWorkspaceService } from '../services/member.service';
+import { Permissions } from '../enums/role.enum';
+import { roleGaurd } from '../utils/roleGuard.util';
 
 
 export const createWorkspaceController = asyncHandler(
@@ -52,7 +54,7 @@ export const getWorkspaceByIdController = asyncHandler (
 
 
         // get role of current user in the workspace requested 
-        await getMemberRoleService(userId, workspaceId);
+        await getMemberRoleInWorkspaceService(userId, workspaceId);
 
         // if user has a role in the workspace , get workspace data
         const {workspace} = await getWorkspaceByIdService(workspaceId);
@@ -63,5 +65,34 @@ export const getWorkspaceByIdController = asyncHandler (
         });
 
         
+    }
+)
+
+export const getWorkspaceMembersController = asyncHandler (
+    async (req : Request , res : Response) => {
+        const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
+        const userId = req.user?._id;
+
+        // we get the role of the user 
+        const {role} = await getMemberRoleInWorkspaceService(userId, workspaceId);
+
+        // now check if the user role has permission required to see the members of this workspace
+        roleGaurd(role, [Permissions.VIEW_ONLY]);
+        // this will throw an error if the role does not has all the permissions required to perform action below
+
+        // now get all the members and possible values of role 
+        const {members, roles} = await getAllWorkspaceMembersService(workspaceId);
+
+
+        // return all members and all possible roles to client
+        return res.status(HTTPSTATUS.OK).json(
+            {
+                message : "workspace members fetched successfully",
+                members,
+                roles
+            }
+        )
+
+
     }
 )
