@@ -1,11 +1,12 @@
 import passport from "passport";
 
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as LocalStrategy} from "passport-local";
 import { config } from "./app.config";
 import { Request } from "express";
 import { NotFoundException } from "../utils/appError.util";
 import { ProvideEnum } from "../enums/account.provider";
-import { loginOrCreateAccountService } from "../services/auth.service";
+import { loginOrCreateAccountService, verifyUserService } from "../services/auth.service";
 
 
 passport.use(
@@ -42,6 +43,29 @@ passport.use(
             }
         }
     )
+)
+
+// setup local strategy to login using email and password
+passport.use(
+    new LocalStrategy(
+        {
+            usernameField : "email",
+            passwordField : "password",
+            session : true
+        },
+        // passport extracts email and password from req and passes to the callback
+        async (email , password, done) => {
+            try {
+                // try to retrive user info 
+                const user = await verifyUserService({email, password});
+
+                return done(null, user);
+            } catch (error : any) {
+                return done(error, false, {message : error.message})
+            }
+        }
+    )   
+
 )
 
 passport.serializeUser((user: any, done) => done(null, user))

@@ -1,12 +1,14 @@
 import { Router } from "express";
 import passport from "passport";
 import { config } from "../config/app.config";
-import { googleLoginCallback, registerUserController } from "../controllers/auth.controller";
+import { googleLoginCallback, loginUserController, registerUserController } from "../controllers/auth.controller";
 
 const failedUrl = `${config.FRONTEND_GOOGLE_CALLBACK_URL}?status=failure`
 const authRoutes = Router();
 
 authRoutes.post("/register", registerUserController);
+authRoutes.post("/login", loginUserController);
+
 
 authRoutes.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 // when we hit this endpoint the passport js redirects the user to google login page with the endpoint something like https://accounts.google.com/o/oauth2/auth?client_id=XXXXX&redirect_uri=YYYYY&scope=profile 

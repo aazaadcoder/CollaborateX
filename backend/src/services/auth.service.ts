@@ -1,13 +1,13 @@
-import { object } from 'zod';
+import { ProvideEnum } from './../enums/account.provider';
+
 import mongoose from "mongoose";
 import UserModel from "../models/user.model";
 import accountModel from "../models/account.model";
 import WorkspaceModel from "../models/workspace.model";
 import RoleModel from "../models/role-permission.model";
 import { Roles } from "../enums/role.enum";
-import { BadRequestException, NotFoundException } from "../utils/appError.util";
+import { BadRequestException, NotFoundException, UnauthorizedAccessException } from "../utils/appError.util";
 import MemberModel from "../models/member.model";
-import { ProvideEnum } from "../enums/account.provider";
 
 
 export const loginOrCreateAccountService = async (data: {
@@ -185,8 +185,8 @@ export const registerUserService = async (body: {
         await session.commitTransaction();
         // anything related to transaction returns a promise
 
-        return({
-            userId : user._id,
+        return ({
+            userId: user._id,
             workspaceId: workspace._id,
         })
 
@@ -197,4 +197,34 @@ export const registerUserService = async (body: {
     } finally {
         session.endSession();
     }
+}
+
+export const verifyUserService = async ({ email, password, provider = ProvideEnum.EMAIL
+}: { email: string, password: string, provider?: string }) => {
+    // check if account with this local provider, and its providerid that is email exists or not
+    const account = await accountModel.findOne({provider, providerId : email});
+    
+    if(!account){
+        // if user doesnot exist thorw an error
+        throw new NotFoundException("Invalid Email or Password");
+    }
+
+    // if account for this email exists , retrive the user data from user collection 
+    const user = await UserModel.findById(account.userId);
+
+    // if user for this account doesnot exists throw a not found error
+    if(!user){
+        throw new NotFoundException("User with this account doesnot exist");
+    }
+
+    // if user exists compare password given by user with the one stored in db
+    const isPasswordMatch = await user.comparePassword(password);
+
+    // if passwords donot match throw a unauthrizedexpection error
+    if(!isPasswordMatch){
+        throw new UnauthorizedAccessException("Invalid email or passoword");
+    }
+
+    // if password matches return the user documnet without the passoword
+    return user.omitPassword();
 }

@@ -5,4 +5,4 @@ export const hashValue = async (value: string, saltRounds: number = 10) => (awai
 )
 
 
-export const compareValue = async (value: string, hashValue: string) => (await bcrypt.hash(value, hashValue))
+export const compareValue = async (value: string, hashValue: string) => (await bcrypt.compare(value, hashValue))
