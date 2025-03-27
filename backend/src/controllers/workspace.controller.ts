@@ -1,7 +1,7 @@
 import { NextFunction, Response, Request } from 'express';
 import { asyncHandler } from "../middlewares/aynscHandler.middleware";
 import { createWorkspaceSchema, workspaceIdSchema } from '../validation/workspace.validation';
-import { createWorkspaceService, getAllUserWorkspacesUserIsMemberService, getWorkspaceByIdService } from '../services/workspace.service';
+import { createWorkspaceService, getAllUserWorkspacesUserIsMemberService, getWorkspaceAnalyticsService, getWorkspaceByIdService } from '../services/workspace.service';
 import { HTTPSTATUS } from '../config/http.config';
 import { UnauthorizedAccessException } from '../utils/appError.util';
 import { getAllWorkspaceMembersService, getMemberRoleInWorkspaceService } from '../services/member.service';
@@ -22,7 +22,7 @@ export const createWorkspaceController = asyncHandler(
         const { workspace } = await createWorkspaceService(userId, body);
 
         return res.status(HTTPSTATUS.CREATED).json({
-            message : "Workspace cretated successfully",
+            message: "Workspace cretated successfully",
             workspace,
         })
 
@@ -31,21 +31,21 @@ export const createWorkspaceController = asyncHandler(
 
 export const getAllUserWorkspacesUserIsMemberController = asyncHandler(
     async (req: Request, res: Response) => {
-        
+
         const userId = req.user?._id;
 
-        const {workspaces} = await getAllUserWorkspacesUserIsMemberService(userId);
+        const { workspaces } = await getAllUserWorkspacesUserIsMemberService(userId);
 
         return res.status(HTTPSTATUS.OK).json({
-            message : "Workspace data for the current user fetched successfully.",
+            message: "Workspace data for the current user fetched successfully.",
             workspaces
         })
     }
 )
 
-export const getWorkspaceByIdController = asyncHandler (
-    async (req: Request , res: Response) => {
-        
+export const getWorkspaceByIdController = asyncHandler(
+    async (req: Request, res: Response) => {
+
         // retrive workspace id from params
         const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
 
@@ -57,42 +57,63 @@ export const getWorkspaceByIdController = asyncHandler (
         await getMemberRoleInWorkspaceService(userId, workspaceId);
 
         // if user has a role in the workspace , get workspace data
-        const {workspace} = await getWorkspaceByIdService(workspaceId);
+        const { workspace } = await getWorkspaceByIdService(workspaceId);
 
         return res.status(HTTPSTATUS.OK).json({
-            message : "workspace data fetched successfully",
+            message: "workspace data fetched successfully",
             workspace
         });
 
-        
+
     }
 )
 
-export const getWorkspaceMembersController = asyncHandler (
-    async (req : Request , res : Response) => {
+export const getWorkspaceMembersController = asyncHandler(
+    async (req: Request, res: Response) => {
         const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
         const userId = req.user?._id;
 
         // we get the role of the user 
-        const {role} = await getMemberRoleInWorkspaceService(userId, workspaceId);
+        const { role } = await getMemberRoleInWorkspaceService(userId, workspaceId);
 
         // now check if the user role has permission required to see the members of this workspace
         roleGaurd(role, [Permissions.VIEW_ONLY]);
         // this will throw an error if the role does not has all the permissions required to perform action below
 
         // now get all the members and possible values of role 
-        const {members, roles} = await getAllWorkspaceMembersService(workspaceId);
+        const { members, roles } = await getAllWorkspaceMembersService(workspaceId);
 
 
         // return all members and all possible roles to client
         return res.status(HTTPSTATUS.OK).json(
             {
-                message : "workspace members fetched successfully",
+                message: "workspace members fetched successfully",
                 members,
                 roles
             }
         )
 
 
+    }
+)
+
+export const getWorkspaceAnalyticsController = asyncHandler(
+    async (req: Request, res: Response) => {
+        const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
+        const userId = req.user?._id;
+
+        // we get the role of the user 
+        const { role } = await getMemberRoleInWorkspaceService(userId, workspaceId);
+
+        // now check if the user role has permission required to see the members of this workspace
+        roleGaurd(role, [Permissions.VIEW_ONLY]);
+        // this will throw an error if the role does not has all the permissions required to perform action below
+
+        const {analytics} = await getWorkspaceAnalyticsService(workspaceId);
+
+        return res.status(HTTPSTATUS.OK).json({
+            message : "Workspace data fetched successfully",
+            analytics,
+        })
     }
 )

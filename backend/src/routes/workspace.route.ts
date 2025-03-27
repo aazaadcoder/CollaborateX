@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createWorkspaceController, getAllUserWorkspacesUserIsMemberController, getWorkspaceByIdController, getWorkspaceMembersController } from "../controllers/workspace.controller";
+import { createWorkspaceController, getAllUserWorkspacesUserIsMemberController, getWorkspaceAnalyticsController, getWorkspaceByIdController, getWorkspaceMembersController } from "../controllers/workspace.controller";
 
 
 const workspaceRoute = Router();
@@ -15,4 +15,6 @@ workspaceRoute.get("/:workspaceId", getWorkspaceByIdController);
 // get all workspace members 
 workspaceRoute.get("/members/:workspaceId", getWorkspaceMembersController);
 
+// get workspace analytics like number of completed task , due tasks etc 
+workspaceRoute.get("/analytics/:workspaceId",getWorkspaceAnalyticsController);
 export default workspaceRoute;

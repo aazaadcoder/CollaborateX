@@ -5,6 +5,8 @@ import { Roles } from '../enums/role.enum';
 import MemberModel from '../models/member.model';
 import UserModel from "../models/user.model";
 import { NotFoundException, UnauthorizedAccessException } from "../utils/appError.util";
+import TaskModel from "../models/task.model";
+import { TaskstatusEnum } from "../enums/task.enum";
 
 export const createWorkspaceService = async (userId: string, body: { name: string, description?: string | undefined }) => {
 
@@ -80,7 +82,6 @@ export const createWorkspaceService = async (userId: string, body: { name: strin
     }
 }
 
-
 export const getAllUserWorkspacesUserIsMemberService = async (userId: string) => {
 
     try {
@@ -120,19 +121,19 @@ export const getWorkspaceByIdService = async (workspaceId: string) => {
 
         const workspace = await WorkspaceModel.findById(workspaceId);
 
-        if(!workspaceId){
+        if (!workspaceId) {
             throw new NotFoundException("workspace doesnot exists");
         }
-       
+
         // now we will also fetch all the members of the workspace and their role data which will be used to handle permissions on the client side
-        const members  = await MemberModel.find({workspaceId}).populate("role");
+        const members = await MemberModel.find({ workspaceId }).populate("role");
 
         const workspaceWithMembers = {
             ...workspace?.toJSON,
             members
         }
 
-        return { workspace : workspaceWithMembers };
+        return { workspace: workspaceWithMembers };
     } catch (error) {
         throw error;
     }
@@ -140,4 +141,42 @@ export const getWorkspaceByIdService = async (workspaceId: string) => {
     // Q : is try catch needed here really ?
 
 
+}
+
+export const getWorkspaceAnalyticsService = async (workspaceId: string) => {
+
+    try {
+        // retrive currentdate 
+        const currentDate = new Date();
+
+        // fetch total tasks in the workspace 
+        const totalTasks = await TaskModel.countDocuments({ workspace: workspaceId });
+
+        //  fetch overdue tasks 
+        const overdueTasks = await TaskModel.countDocuments(
+            {
+                workspace: workspaceId,
+                dueDate: { $lt: currentDate },     // where duedate is less than current date
+                status: { $ne: TaskstatusEnum.DONE }  // where status is not equal to done 
+            }
+        )
+
+        // fetch completed tasks
+        const completedTasks = await TaskModel.countDocuments(
+            {
+                workspace: workspaceId,
+                status: { $eq: TaskstatusEnum.DONE },    // where status is equal to done 
+            }
+        )
+
+        const analytics = {
+            totalTasks,
+            overdueTasks,
+            completedTasks,
+        }
+
+        return {analytics};
+    } catch (error) {
+        throw error;
+    }
 }
