@@ -5,6 +5,7 @@ export const Roles = {
 } as const;
 
 export type RoleType = keyof typeof Roles;
+// a varible with RoleType as its type can only have the above three options anyother optioin will throw error
 
 export const Permissions = {
     CREATE_WORKSPACE: "CREATE_WORKSPACE",
@@ -29,3 +30,4 @@ export const Permissions = {
 } as const;
 
 export type PermissionType = keyof typeof Permissions;
+// this type con

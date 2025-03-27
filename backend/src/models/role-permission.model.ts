@@ -8,7 +8,9 @@ export interface RoleDocument extends Document {
     name: RoleType,
     permissions: Array<PermissionType>;
 }
+// here we define a custom object type using and Document class and few extra fields 
 
+// now we will create a schema with RoleDocument as it type, and schema must follow it 
 const roleSchema = new Schema<RoleDocument>(
     {
         name: {

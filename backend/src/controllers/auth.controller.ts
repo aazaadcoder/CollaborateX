@@ -5,6 +5,8 @@ import { registerSchema } from "../validation/auth.validation";
 import { HTTPSTATUS } from "../config/http.config";
 import { registerUserService } from "../services/auth.service";
 
+
+// this function is called when user is atenticated successfully by google 
 export const googleLoginCallback = asyncHandler(async (req: Request, res: Response) => {
     
     // try to retrive currentWorkspace of the user 

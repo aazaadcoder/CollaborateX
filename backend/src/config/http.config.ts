@@ -1,3 +1,5 @@
+
+// will create a fxn to return an object containing all the status code that we will use in this application 
 const httpConfig  = () => ({
      // Success responses
   OK: 200,
