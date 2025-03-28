@@ -118,7 +118,7 @@ export const getWorkspaceAnalyticsController = asyncHandler(
     }
 )
 
-export const chanegeMemberRoleController = asyncHandler(
+export const changeMemberRoleController = asyncHandler(
     async (req : Request , res : Response) =>{
         // how to know which member's role i have to change
         // ans => from body 

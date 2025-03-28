@@ -193,6 +193,9 @@ export const changeMemberRoleService = async (workspaceId: string, memberId: str
         // check if role  that we want to assign to member exists
         const role = await RoleModel.findById(roleId);
 
+        // todo check if the role to be assigned is not owner as their can be only one owner
+        // todo if the new role is same as old role ?
+
         if (!role) {
             throw new NotFoundException("Role does not exist");
         }
