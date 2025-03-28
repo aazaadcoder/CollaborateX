@@ -33,3 +33,10 @@ export const getAllWorkspaceProjectService = async (workspaceId: string, pageSiz
     const totalPages = Math.ceil(totalProjects/pageSize);
     return { projects,  totalProjects, totalPages, skip };
 }
+
+export const  getProjectByIdAndWorkspaceIdService =  async (userId : string, workspaceId : string) => {
+
+    const project = await ProjectModel.findOne({createdBy : userId , workspace : workspaceId});
+
+    return {project}
+}  
