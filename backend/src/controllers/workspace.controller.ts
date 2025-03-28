@@ -1,7 +1,7 @@
 import { NextFunction, Response, Request } from 'express';
 import { asyncHandler } from "../middlewares/aynscHandler.middleware";
-import { createWorkspaceSchema, workspaceIdSchema } from '../validation/workspace.validation';
-import { createWorkspaceService, getAllUserWorkspacesUserIsMemberService, getWorkspaceAnalyticsService, getWorkspaceByIdService } from '../services/workspace.service';
+import { changeMemberRoleSchema, createWorkspaceSchema, workspaceIdSchema } from '../validation/workspace.validation';
+import { changeMemberRoleService, createWorkspaceService, getAllUserWorkspacesUserIsMemberService, getWorkspaceAnalyticsService, getWorkspaceByIdService } from '../services/workspace.service';
 import { HTTPSTATUS } from '../config/http.config';
 import { UnauthorizedAccessException } from '../utils/appError.util';
 import { getAllWorkspaceMembersService, getMemberRoleInWorkspaceService } from '../services/member.service';
@@ -115,5 +115,32 @@ export const getWorkspaceAnalyticsController = asyncHandler(
             message : "Workspace data fetched successfully",
             analytics,
         })
+    }
+)
+
+export const chanegeMemberRoleController = asyncHandler(
+    async (req : Request , res : Response) =>{
+        // how to know which member's role i have to change
+        // ans => from body 
+
+        const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
+        const userId = req.user?._id;
+
+        const {memberId, roleId}  = changeMemberRoleSchema.parse(req.body);
+
+        // get the role of the current user
+        const {role} = await getMemberRoleInWorkspaceService(userId, workspaceId);
+        // check if the current user has access to change the role of members
+        roleGaurd(role, [Permissions.CHANGE_MEMBER_ROLE]);
+
+        const {member} = await changeMemberRoleService(workspaceId, memberId, roleId);
+
+        res.status(HTTPSTATUS.OK).json({
+            message : "Member Role changed Successfully",
+            member
+        })
+
+        // todo : check this endpoint after completing invite endpoint
+
     }
 )

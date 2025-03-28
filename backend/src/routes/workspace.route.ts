@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createWorkspaceController, getAllUserWorkspacesUserIsMemberController, getWorkspaceAnalyticsController, getWorkspaceByIdController, getWorkspaceMembersController } from "../controllers/workspace.controller";
+import { chanegeMemberRoleController, createWorkspaceController, getAllUserWorkspacesUserIsMemberController, getWorkspaceAnalyticsController, getWorkspaceByIdController, getWorkspaceMembersController } from "../controllers/workspace.controller";
 
 
 const workspaceRoute = Router();
@@ -17,4 +17,20 @@ workspaceRoute.get("/members/:workspaceId", getWorkspaceMembersController);
 
 // get workspace analytics like number of completed task , due tasks etc 
 workspaceRoute.get("/analytics/:workspaceId",getWorkspaceAnalyticsController);
+
+// change/put the role of a member in workspace
+workspaceRoute.put("/change/member/role/:workspaceId", chanegeMemberRoleController);
+
+
+
+
+
+
+
+
+
+
+
+
+
 export default workspaceRoute;

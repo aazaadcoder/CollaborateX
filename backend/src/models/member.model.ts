@@ -6,8 +6,8 @@ import { RoleDocument } from "./role-permission.model";
 export interface MemberDocument extends Document {
     userId: mongoose.Types.ObjectId;
     workspaceId: mongoose.Types.ObjectId;
-    role: RoleDocument
-    joinedAt: Date,
+    role: mongoose.Types.ObjectId;
+    joinedAt: Date;
 }
 
 const memberSchema = new Schema<MemberDocument>({
@@ -31,7 +31,7 @@ const memberSchema = new Schema<MemberDocument>({
         required: true
     }
 
-})
+}, {timestamps : true})
 
 const MemberModel = mongoose.model("Member", memberSchema);
 

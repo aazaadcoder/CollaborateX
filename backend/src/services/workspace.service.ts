@@ -175,7 +175,40 @@ export const getWorkspaceAnalyticsService = async (workspaceId: string) => {
             completedTasks,
         }
 
-        return {analytics};
+        return { analytics };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const changeMemberRoleService = async (workspaceId: string, memberId: string, roleId: string) => {
+    try {
+        // check if workspace exists
+        const workspace = await WorkspaceModel.findById(workspaceId);
+
+        if (!workspace) {
+            throw new NotFoundException("Workspace does not exists");
+        }
+
+        // check if role  that we want to assign to member exists
+        const role = await RoleModel.findById(roleId);
+
+        if (!role) {
+            throw new NotFoundException("Role does not exist");
+        }
+
+        // check if member is a member of the workspace
+        const member = await MemberModel.findOne({ userId: memberId, workspaceId });
+
+        if (!member) {
+            throw new NotFoundException("Member not found in workspace")
+        }
+
+        // if the member exists in the workspace then change the role
+        member.role = role._id as mongoose.Types.ObjectId;
+        await member.save();
+
+        return {member};
     } catch (error) {
         throw error;
     }
