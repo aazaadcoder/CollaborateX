@@ -1,15 +1,11 @@
 import { NextFunction, Response, Request } from 'express';
 import { asyncHandler } from "../middlewares/aynscHandler.middleware";
 import { changeMemberRoleSchema, createWorkspaceSchema, updateWorkspaceSchema, workspaceIdSchema } from '../validation/workspace.validation';
-import { changeMemberRoleService, createWorkspaceService, getAllUserWorkspacesUserIsMemberService, getWorkspaceAnalyticsService, getWorkspaceByIdService, updateWorkspaceService } from '../services/workspace.service';
+import { changeMemberRoleService, createWorkspaceService, deleteWorkspaceService, getAllUserWorkspacesUserIsMemberService, getWorkspaceAnalyticsService, getWorkspaceByIdService, updateWorkspaceService } from '../services/workspace.service';
 import { HTTPSTATUS } from '../config/http.config';
-import { BadRequestException, NotFoundException, UnauthorizedAccessException } from '../utils/appError.util';
 import { getAllWorkspaceMembersService, getMemberRoleInWorkspaceService } from '../services/member.service';
 import { Permissions } from '../enums/role.enum';
 import { roleGaurd } from '../utils/roleGuard.util';
-import MemberModel from '../models/member.model';
-import WorkspaceModel from '../models/workspace.model';
-
 
 export const createWorkspaceController = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -51,6 +47,27 @@ export const updateWorkspaceController = asyncHandler(
         })
     }
 )
+
+export const deleteWorkspaceController = asyncHandler(
+    async (req: Request, res: Response) => {
+        const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
+        const userId = req.user?._id
+        // get the role of the user to check if he has permission to delete or not
+        const { role } = await getMemberRoleInWorkspaceService(userId, workspaceId);
+
+        roleGaurd(role, [Permissions.DELETE_WORKSPACE]);
+
+        // if user has permission to delete then we wil call workspace delete service
+
+        const { currentWorkspace } = await deleteWorkspaceService(workspaceId, userId);
+
+        return res.status(HTTPSTATUS.OK).json({
+            message: "Workspace has been deleted successfully",
+            currentWorkspace
+        })
+    }
+)
+
 
 export const getAllUserWorkspacesUserIsMemberController = asyncHandler(
     async (req: Request, res: Response) => {

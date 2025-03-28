@@ -8,6 +8,7 @@ import { BadRequestException, NotFoundException, UnauthorizedAccessException } f
 
 export const getMemberRoleInWorkspaceService = async (userId: string, workspaceId: string) => {
 
+    
     // check if user exists 
     const user = await UserModel.findById(userId);
 
@@ -31,7 +32,7 @@ export const getMemberRoleInWorkspaceService = async (userId: string, workspaceI
     if (!member) {
         throw new UnauthorizedAccessException("you are not a member of this workspace");
     }
-    
+
     const roleName = (member.role as any).name;
 
     return { role: roleName };
