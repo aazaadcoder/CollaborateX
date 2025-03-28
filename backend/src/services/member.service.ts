@@ -31,7 +31,7 @@ export const getMemberRoleInWorkspaceService = async (userId: string, workspaceI
     if (!member) {
         throw new UnauthorizedAccessException("you are not a member of this workspace");
     }
-
+    
     const roleName = (member.role as any).name;
 
     return { role: roleName };

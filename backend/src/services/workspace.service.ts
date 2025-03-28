@@ -82,6 +82,26 @@ export const createWorkspaceService = async (userId: string, body: { name: strin
     }
 }
 
+export const updateWorkspaceService = async (workspaceId: string, name: string, description: string | undefined) => {
+
+    try {
+        // check if the workspace for the id provided exists or not 
+        const workspace = await WorkspaceModel.findById(workspaceId);
+        if (!workspace) {
+            throw new NotFoundException("Workspace not found");
+        }
+
+        workspace.name = name || workspace.name;
+        workspace.description = description || workspace.description;
+
+        await workspace.save();
+        return {  workspace };
+    } catch (error) {
+        throw error;
+    }
+
+}
+
 export const getAllUserWorkspacesUserIsMemberService = async (userId: string) => {
 
     try {
@@ -211,7 +231,7 @@ export const changeMemberRoleService = async (workspaceId: string, memberId: str
         member.role = role._id as mongoose.Types.ObjectId;
         await member.save();
 
-        return {member};
+        return { member };
     } catch (error) {
         throw error;
     }

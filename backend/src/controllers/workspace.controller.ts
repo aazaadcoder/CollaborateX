@@ -1,12 +1,14 @@
 import { NextFunction, Response, Request } from 'express';
 import { asyncHandler } from "../middlewares/aynscHandler.middleware";
-import { changeMemberRoleSchema, createWorkspaceSchema, workspaceIdSchema } from '../validation/workspace.validation';
-import { changeMemberRoleService, createWorkspaceService, getAllUserWorkspacesUserIsMemberService, getWorkspaceAnalyticsService, getWorkspaceByIdService } from '../services/workspace.service';
+import { changeMemberRoleSchema, createWorkspaceSchema, updateWorkspaceSchema, workspaceIdSchema } from '../validation/workspace.validation';
+import { changeMemberRoleService, createWorkspaceService, getAllUserWorkspacesUserIsMemberService, getWorkspaceAnalyticsService, getWorkspaceByIdService, updateWorkspaceService } from '../services/workspace.service';
 import { HTTPSTATUS } from '../config/http.config';
-import { UnauthorizedAccessException } from '../utils/appError.util';
+import { BadRequestException, NotFoundException, UnauthorizedAccessException } from '../utils/appError.util';
 import { getAllWorkspaceMembersService, getMemberRoleInWorkspaceService } from '../services/member.service';
 import { Permissions } from '../enums/role.enum';
 import { roleGaurd } from '../utils/roleGuard.util';
+import MemberModel from '../models/member.model';
+import WorkspaceModel from '../models/workspace.model';
 
 
 export const createWorkspaceController = asyncHandler(
@@ -26,6 +28,27 @@ export const createWorkspaceController = asyncHandler(
             workspace,
         })
 
+    }
+)
+
+export const updateWorkspaceController = asyncHandler(
+    async (req: Request, res: Response) => {
+        const { name, description } = updateWorkspaceSchema.parse(req.body);
+        const userId = req.user?._id;
+        const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
+
+        // get user role from member document this will also check if workspace exits or not 
+        const { role } = await getMemberRoleInWorkspaceService(userId, workspaceId);
+
+        roleGaurd(role, [Permissions.EDIT_WORKSPACE]);
+
+        const { workspace } = await updateWorkspaceService(workspaceId, name, description);
+
+
+        return res.status(HTTPSTATUS.OK).json({
+            messsage: "workspace updated successfully",
+            workspace,
+        })
     }
 )
 
@@ -109,34 +132,34 @@ export const getWorkspaceAnalyticsController = asyncHandler(
         roleGaurd(role, [Permissions.VIEW_ONLY]);
         // this will throw an error if the role does not has all the permissions required to perform action below
 
-        const {analytics} = await getWorkspaceAnalyticsService(workspaceId);
+        const { analytics } = await getWorkspaceAnalyticsService(workspaceId);
 
         return res.status(HTTPSTATUS.OK).json({
-            message : "Workspace data fetched successfully",
+            message: "Workspace data fetched successfully",
             analytics,
         })
     }
 )
 
 export const changeMemberRoleController = asyncHandler(
-    async (req : Request , res : Response) =>{
+    async (req: Request, res: Response) => {
         // how to know which member's role i have to change
         // ans => from body 
 
         const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
         const userId = req.user?._id;
 
-        const {memberId, roleId}  = changeMemberRoleSchema.parse(req.body);
+        const { memberId, roleId } = changeMemberRoleSchema.parse(req.body);
 
         // get the role of the current user
-        const {role} = await getMemberRoleInWorkspaceService(userId, workspaceId);
+        const { role } = await getMemberRoleInWorkspaceService(userId, workspaceId);
         // check if the current user has access to change the role of members
         roleGaurd(role, [Permissions.CHANGE_MEMBER_ROLE]);
 
-        const {member} = await changeMemberRoleService(workspaceId, memberId, roleId);
+        const { member } = await changeMemberRoleService(workspaceId, memberId, roleId);
 
         res.status(HTTPSTATUS.OK).json({
-            message : "Member Role changed Successfully",
+            message: "Member Role changed Successfully",
             member
         })
 
