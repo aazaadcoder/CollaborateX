@@ -39,10 +39,10 @@ export const createTaskSchema = z.object({
 });
 
 export const updateTaskSchema = z.object({
-    title: titleSchema,
+    title: titleSchema.optional(),
     description: descriptionSchema,
-    priority: prioritySchema,
-    status: statusSchema,
+    priority: prioritySchema.optional(),
+    status: statusSchema.optional(),
     assignedTo: assignedToSchema,
     dueDate: dueDateSchema,
 });
