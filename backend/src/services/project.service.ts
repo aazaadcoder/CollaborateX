@@ -29,30 +29,30 @@ export const getAllWorkspaceProjectService = async (workspaceId: string, pageSiz
     const totalProjects = await ProjectModel.countDocuments({ workspace: workspaceId });
 
     const skip = (pageNumber - 1) * pageSize;
-    
-    // get paginated projects in desceding order of date created 
-    const projects = await ProjectModel.find({ workspace: workspaceId }).skip(skip).limit(pageSize).populate("createdBy", "_id name profilePicture -password").sort({createdAt : -1});
 
-    const totalPages = Math.ceil(totalProjects/pageSize);
-    return { projects,  totalProjects, totalPages, skip };
+    // get paginated projects in desceding order of date created 
+    const projects = await ProjectModel.find({ workspace: workspaceId }).skip(skip).limit(pageSize).populate("createdBy", "_id name profilePicture -password").sort({ createdAt: -1 });
+
+    const totalPages = Math.ceil(totalProjects / pageSize);
+    return { projects, totalProjects, totalPages, skip };
 }
 
-export const  getProjectByIdAndWorkspaceIdService =  async (userId : string, workspaceId : string) => {
+export const getProjectByIdAndWorkspaceIdService = async (userId: string, workspaceId: string) => {
 
-    const project = await ProjectModel.findOne({createdBy : userId , workspace : workspaceId}).select("_id emoji name description");
+    const project = await ProjectModel.findOne({ createdBy: userId, workspace: workspaceId }).select("_id emoji name description");
 
-    if(!project) {
+    if (!project) {
         throw new NotFoundException("Project not found or doesnot belog to specified workspace ")
     }
 
-    return {project}
-}  
+    return { project }
+}
 
 
-export const getProjectAnalyticService = async(projectId : string, workspaceId : string) => {
+export const getProjectAnalyticService = async (projectId: string, workspaceId: string) => {
     // check if project exist 
-    const project = await ProjectModel.findOne({_id : projectId , workspace : workspaceId});
-    if(!project){
+    const project = await ProjectModel.findOne({ _id: projectId, workspace: workspaceId });
+    if (!project) {
         throw new NotFoundException("Project Not found or doesnot belong to the workspace provided ");
     }
 
@@ -80,57 +80,86 @@ export const getProjectAnalyticService = async(projectId : string, workspaceId :
     //         status : {$eq : TaskstatusEnum.DONE}
     //     })
 
-    
+
     /* lets use agregation pipelines this time */
 
     const taskAnalytics = await TaskModel.aggregate(
         [
             {
-                $match : {
-                    project : projectId ,
-                    workspace : workspaceId,
+                $match: {
+                    project: projectId,
+                    workspace: workspaceId,
                 }
             },
             {
-                $facet : {
-                    totalTasks : [{$count : "count"}],
-                    overdueTasks :
-                    [
-                        {
-                            $match : { 
-                                dueDate : {$lt : currentDate},
-                                status : {$ne : TaskstatusEnum.DONE}
+                $facet: {
+                    totalTasks: [{ $count: "count" }],
+                    overdueTasks:
+                        [
+                            {
+                                $match: {
+                                    dueDate: { $lt: currentDate },
+                                    status: { $ne: TaskstatusEnum.DONE }
+                                }
+                            },
+                            {
+                                $count: "count"
                             }
-                        },
-                        {
-                            $count : "count"
-                        }
 
-                    ],
-                    completedTasks  :
-                    [
-                        {
-                            $match :{
-                                status : {$eq : TaskstatusEnum.DONE}
+                        ],
+                    completedTasks:
+                        [
+                            {
+                                $match: {
+                                    status: { $eq: TaskstatusEnum.DONE }
+                                }
+                            },
+                            {
+                                $count: "count"
                             }
-                        },
-                        {
-                            $count : "count"
-                        }
-                    ]
+                        ]
                 }
             }
         ]
     )
 
-    const  _analytics = taskAnalytics[0];
+    const _analytics = taskAnalytics[0];
 
     const analytics = {
-        totalTasks : _analytics.totalTasks[0]?.count || 0,
-        overdueTasks : _analytics.overdueTasks[0]?.count || 0,
-        completedTasks : _analytics.completedTasks[0]?.count || 0,
+        totalTasks: _analytics.totalTasks[0]?.count || 0,
+        overdueTasks: _analytics.overdueTasks[0]?.count || 0,
+        completedTasks: _analytics.completedTasks[0]?.count || 0,
     }
-    return {analytics}
+    return { analytics }
+
+
+}
+
+export const updateProjectService = async (projectId: string, workspaceId: string,
+    body: {
+        name?: string,
+        emoji?: string,
+        description?: string
+    }) => {
+    // check if project in workspace exist 
+    const project = await ProjectModel.findOne({ _id: projectId, workspace: workspaceId });
+
+    if (!project) {
+        throw new NotFoundException("Project not found or project not found in workspace");
+    }
+
+    // upadate body in project model
+
+    project.name = body.name || project.name;
+    project.emoji = body.emoji || project.emoji;
+    project.description = body.description || project.description;
+
+
+    await project.save();
+
+
+    return { project };
+
 
 
 }
