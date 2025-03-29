@@ -5,7 +5,7 @@ import { createProjectSchema, projectIdSchema, updateProjectSchema } from "../va
 import { getMemberRoleInWorkspaceService } from "../services/member.service";
 import { roleGaurd } from "../utils/roleGuard.util";
 import { Permissions } from "../enums/role.enum";
-import { createProjectService, getAllWorkspaceProjectService, getProjectAnalyticService, getProjectByIdAndWorkspaceIdService, updateProjectService } from "../services/project.service";
+import { createProjectService, deleteProjectService, getAllWorkspaceProjectService, getProjectAnalyticService, getProjectByIdAndWorkspaceIdService, updateProjectService } from "../services/project.service";
 import { HTTPSTATUS } from "../config/http.config";
 
 export const createProjectController = asyncHandler(
@@ -79,7 +79,7 @@ export const getProjectByIdAndWorkspaceIdController = asyncHandler(
         const { role } = await getMemberRoleInWorkspaceService(userId, workspaceId);
         roleGaurd(role, [Permissions.VIEW_ONLY]);
 
-        const { project } = await getProjectByIdAndWorkspaceIdService(userId, workspaceId);
+        const { project } = await getProjectByIdAndWorkspaceIdService(projectId, workspaceId);
 
 
         return res.status(HTTPSTATUS.OK).json({
@@ -124,17 +124,28 @@ export const updateProjectController = asyncHandler(
         roleGaurd(role, [Permissions.EDIT_PROJECT]);
 
         // update project
-        const {project} = await updateProjectService(projectId, workspaceId, body);
-
+        const { project } = await updateProjectService(projectId, workspaceId, body);
 
         return res.status(HTTPSTATUS.OK).json({
-            message   : "project updated succcessfully",
+            message: "project updated succcessfully",
             project
         })
+    })
 
+export const deleteProjectController = asyncHandler(
+    async (req: Request, res: Response) => {
+        const userId = req.user?._id;
+        const projectId = projectIdSchema.parse(req.params.projectId);
+        const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
 
+        // check role and permission of the user
+        const { role } = await getMemberRoleInWorkspaceService(userId, workspaceId);
+        roleGaurd(role, [Permissions.DELETE_PROJECT]);
 
-    }
+        await deleteProjectService(projectId, workspaceId);
 
+        return res.status(HTTPSTATUS.OK).json({
+            message : "project and all tasks associated with have been deletedSuccessfully."
+        })
 
-)
+    })

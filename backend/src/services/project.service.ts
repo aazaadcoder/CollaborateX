@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { TaskstatusEnum } from "../enums/task.enum";
 import ProjectModel from "../models/project.model"
 import TaskModel from "../models/task.model";
@@ -37,9 +38,9 @@ export const getAllWorkspaceProjectService = async (workspaceId: string, pageSiz
     return { projects, totalProjects, totalPages, skip };
 }
 
-export const getProjectByIdAndWorkspaceIdService = async (userId: string, workspaceId: string) => {
+export const getProjectByIdAndWorkspaceIdService = async (projectId: string, workspaceId: string) => {
 
-    const project = await ProjectModel.findOne({ createdBy: userId, workspace: workspaceId }).select("_id emoji name description");
+    const project = await ProjectModel.findOne({ _id: projectId, workspace: workspaceId }).select("_id emoji name description");
 
     if (!project) {
         throw new NotFoundException("Project not found or doesnot belog to specified workspace ")
@@ -154,11 +155,45 @@ export const updateProjectService = async (projectId: string, workspaceId: strin
     project.emoji = body.emoji || project.emoji;
     project.description = body.description || project.description;
 
-
     await project.save();
 
-
     return { project };
+}
+
+export const deleteProjectService = async (projectId: string, workspaceId: string) => {
+
+    /*
+    1. delete all the tasks assosiaated with the project 
+    2. delete the project 
+    3. so we will use transactions
+    */
+
+    const session = await mongoose.startSession();
+
+    try {
+        await session.startTransaction();
+
+        // check if project in workspace exist 
+        const project = await ProjectModel.findOne({ _id: projectId, workspace: workspaceId }).session(session);
+
+        if (!project) {
+            throw new NotFoundException("Project not found or project not found in workspace");
+        }
+
+        // delete all tasks
+        await TaskModel.deleteMany({project: projectId , workspace : workspaceId}).session(session);
+
+        // delete the project
+        await project.deleteOne().session(session);
+
+        await session.commitTransaction();
+
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        await session.endSession();
+    }
 
 
 
