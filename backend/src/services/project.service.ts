@@ -88,8 +88,8 @@ export const getProjectAnalyticService = async (projectId: string, workspaceId: 
         [
             {
                 $match: {
-                    project: projectId,
-                    workspace: workspaceId,
+                    project: new mongoose.Types.ObjectId(projectId),
+                    workspace: new mongoose.Types.ObjectId(workspaceId),
                 }
             },
             {
@@ -125,6 +125,7 @@ export const getProjectAnalyticService = async (projectId: string, workspaceId: 
     )
 
     const _analytics = taskAnalytics[0];
+
 
     const analytics = {
         totalTasks: _analytics.totalTasks[0]?.count || 0,
