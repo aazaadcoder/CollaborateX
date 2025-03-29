@@ -184,3 +184,39 @@ export const getAllTasksService = async (workspaceId: string,
     };
 
 }
+
+export const getTaskByIdService = async (taskId: string, projectId: string, workspaceId: string) => {
+    // check if project exists 
+    const project = await ProjectModel.find({ _id: projectId, workspace: workspaceId });
+
+    if (!project) {
+        throw new NotFoundException("Project not found or does not belong to this workspace")
+    }
+    // check if task exists and belongs to propject and workspace
+
+    const task = await TaskModel.findOne({ _id: taskId, workspace: workspaceId, project: projectId });
+
+    if (!task) {
+        throw new NotFoundException("Task not found or task doesnot belong to this project/workspace");
+    }
+
+    return { task };
+}
+export const deleteTaskService = async (taskId: string, projectId: string, workspaceId: string) => {
+    // check if project exists 
+    const project = await ProjectModel.find({ _id: projectId, workspace: workspaceId });
+
+    if (!project) {
+        throw new NotFoundException("Project not found or does not belong to this workspace")
+    }
+    // check if task exists and belongs to propject and workspace
+
+    const task = await TaskModel.findOne({ _id: taskId, workspace: workspaceId, project: projectId });
+
+    if (!task) {
+        throw new NotFoundException("Task not found or task doesnot belong to this project/workspace");
+    }
+
+    await task.deleteOne();
+    
+}

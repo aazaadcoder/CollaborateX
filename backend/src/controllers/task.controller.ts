@@ -6,7 +6,7 @@ import { getMemberRoleInWorkspaceService } from "../services/member.service";
 import { Permissions } from "../enums/role.enum";
 import { roleGaurd } from "../utils/roleGuard.util";
 import { createTaskSchema, taskIdSchema, updateTaskSchema } from "../validation/task.validation";
-import { createTaskService, getAllTasksService, updateTaskService } from "../services/task.service";
+import { createTaskService, deleteTaskService, getAllTasksService, getTaskByIdService, updateTaskService } from "../services/task.service";
 import { HTTPSTATUS } from "../config/http.config";
 
 
@@ -94,13 +94,46 @@ export const getAllTasksController = asyncHandler(
 
     }
 )
-export const createesadf = asyncHandler(
+export const getTaskByIdController = asyncHandler(
     async (req: Request, res: Response) => {
+        const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
+        const projectId = projectIdSchema.parse(req.params.projectId);
+        const taskId = taskIdSchema.parse(req.params.taskId);
+        const userId = req.user?._id;
 
+
+        const { role } = await getMemberRoleInWorkspaceService(userId, workspaceId);
+        roleGaurd(role, [Permissions.VIEW_ONLY]);
+
+        const {task} = await getTaskByIdService(taskId, projectId, workspaceId);
+
+        return res.status(HTTPSTATUS.OK).json(
+            {
+                message : "Task fetch successful",
+                task
+            }
+        )
     }
 )
-export const createfdesad = asyncHandler(
+export const deleteTaskController = asyncHandler(
     async (req: Request, res: Response) => {
+
+        const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
+        const projectId = projectIdSchema.parse(req.params.projectId);
+        const taskId = taskIdSchema.parse(req.params.taskId);
+        const userId = req.user?._id;
+
+
+        const { role } = await getMemberRoleInWorkspaceService(userId, workspaceId);
+        roleGaurd(role, [Permissions.DELETE_TASK]);
+
+        await deleteTaskService(taskId, projectId, workspaceId);
+
+        return res.status(HTTPSTATUS.OK).json(
+            {
+                message : "task deleted Successfully"
+            }
+        )
 
     }
 )
