@@ -126,6 +126,7 @@ const Asidebar = () => {
       </Sidebar>
 
       <LogoutDialog isOpen={isOpen} setIsOpen={setIsOpen} />
+      {/* isOpen is the state of this logout dailog box */}
     </>
   );
 };
