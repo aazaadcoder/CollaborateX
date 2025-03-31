@@ -14,6 +14,8 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+
+        {/* invite route */}
         <Route element={<BaseLayout />}>
           {baseRoutePaths.map((route) => (
             <Route key={route.path} path={route.path} element={route.element} />
