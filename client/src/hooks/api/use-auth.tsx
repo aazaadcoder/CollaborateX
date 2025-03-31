@@ -1,6 +1,8 @@
 import { getCurrentUserQueryFn } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
+
+// this hook is to access the current user using react query 
 const useAuth = () => {
   const query = useQuery({
     queryKey: ["authUser"],

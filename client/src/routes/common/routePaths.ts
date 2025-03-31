@@ -1,3 +1,4 @@
+// check if pathname is authroute or not 
 export const isAuthRoute = (pathname: string): boolean => {
   return Object.values(AUTH_ROUTES).includes(pathname);
 };
