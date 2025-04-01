@@ -1,15 +1,20 @@
 import { createContext, useContext, useEffect } from "react";
 import useWorkspaceId from "@/hooks/use-workspace-id";
 import useAuth from "@/hooks/api/use-auth";
-import { UserType } from "@/types/api.type";
+import { UserType, WorkspaceType } from "@/types/api.type";
+import useGetWorkspaceQuery from "@/hooks/api/use-get-workspace";
+import { useNavigate } from "react-router-dom";
 
 // Define the context shape
 type AuthContextType = {
   user?: UserType;
+  workspace? : WorkspaceType;
   error: any;
-  isPending: boolean;
+  authIsPending: boolean;
+  workspaceIsPending : boolean;
   isFetching: boolean;
   refetchAuth: () => void;
+  refetchWorkspace : () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,17 +22,33 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const navigate = useNavigate()
+
+  // get workspace id from params
+  const workspaceId = useWorkspaceId();
   const {
     data: authData,
     error: authError,
-    isPending: authPending,
+    isPending: authIsPending,
     isFetching,
     refetch: refetchAuth,
   } = useAuth();
 
   const user = authData?.user;
 
-  // const workspaceId = useWorkspaceId();
+  // fetch workspace data 
+  const {
+    data : workspaceData,
+    isPending : workspaceIsPending,
+    error : workspaceError,
+    refetch : refetchWorkspace,
+  } = useGetWorkspaceQuery(workspaceId);
+
+  const workspace = workspaceData?.workspace;
+
+  // check if user is member of the workspace he wants to vists
+
+
 
   useEffect(() => { });
 
@@ -35,10 +56,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     <AuthContext.Provider
       value={{
         user,
-        error: authError,
+        workspace,
+        error: authError || workspaceError,
         isFetching,
-        isPending: authPending,
+        authIsPending,
+        workspaceIsPending,
         refetchAuth,
+        refetchWorkspace,
       }}
     >
       {children}

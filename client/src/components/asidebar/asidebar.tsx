@@ -33,7 +33,7 @@ import useWorkspaceId from "@/hooks/use-workspace-id";
 import { useAuthContext } from "@/context/auth-provider";
 
 const Asidebar = () => {
-  const {isPending : isLoading, user, error, isFetching, refetchAuth} = useAuthContext();
+  const { authIsPending, user, error, isFetching, refetchAuth} = useAuthContext();
 
   const { open } = useSidebar();
   const workspaceId = useWorkspaceId();
@@ -72,7 +72,7 @@ const Asidebar = () => {
         <SidebarFooter className="dark:bg-background">
           <SidebarMenu>
             <SidebarMenuItem>
-              {isLoading ? (
+              {authIsPending ? (
                 <Loader
                   size="24px"
                   className="place-self-center self-center animate-spin"

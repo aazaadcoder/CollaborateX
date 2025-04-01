@@ -1,3 +1,4 @@
+import { CustomError } from "@/types/cutomErrorType";
 import axios from "axios";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -18,13 +19,27 @@ API.interceptors.response.use(
   // if the reposonse if of error that is it lies outside 2XX status code
   async (error) => {
     const { data, status } = error.response;
+
+    if(data?.errorCode === "ACCESS_UNAUTHORIZED"){
+          window.location.href = "/" ;
+        }
+
     // if resopnse if of unathorized access redirect the user to home page that is login page 
     if (data === "Unauthorized" && status === 401) {
       window.location.href = "/";
     }
+
+    const customError : CustomError = {
+      ...error,
+      errorCode : data?.errorCode || "UNKOWN ERROR",
+
+    }
+
+
+
     // then we can destructure the error data and return a promise reject which can we handled by catch 
     return Promise.reject({
-      ...data,
+      customError
     });
   }
 );
